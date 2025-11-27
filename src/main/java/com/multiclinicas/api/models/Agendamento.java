@@ -1,6 +1,7 @@
 package com.multiclinicas.api.models;
 
 import com.multiclinicas.api.models.enums.StatusAgendamento;
+import com.multiclinicas.api.models.enums.TipoPagamento;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -32,9 +33,20 @@ public class Agendamento {
     @JoinColumn(name = "paciente_id", nullable = false)
     private Paciente paciente;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "medico_id", nullable = false)
     private Medico medico;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TipoPagamento tipoPagamento = TipoPagamento.PARTICULAR;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "plano_saude_id")
+    private PlanoSaude planoSaude; // Null se for Particular
+
+    private String tokenAutorizacao; // Preenchido pela recepcionista
+    // -------------------------------------------------
 
     private LocalDate dataConsulta;
 

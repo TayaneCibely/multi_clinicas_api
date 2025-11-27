@@ -22,6 +22,9 @@ public class Medico extends BaseUsuario {
 
     private Boolean ativo = true;
 
+    @Column(nullable = false)
+    private Integer duracaoConsulta = 30;
+
     @ManyToMany
     @JoinTable(name = "medico_especialidade")
     private Set<Especialidade> especialidades = new HashSet<>();

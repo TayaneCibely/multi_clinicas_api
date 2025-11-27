@@ -26,6 +26,4 @@ public class GradeHorario {
     private LocalTime horaInicio;
 
     private LocalTime horaFim;
-
-    private Integer duracaoConsulta;
 }
