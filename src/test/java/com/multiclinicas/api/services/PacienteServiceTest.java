@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +25,9 @@ class PacienteServiceTest {
 
     @Mock
     private PacienteRepository pacienteRepository;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private PacienteServiceImpl pacienteService;
@@ -89,7 +93,9 @@ class PacienteServiceTest {
         // Given
         Paciente paciente = new Paciente();
         paciente.setNome("Novo Paciente");
+        paciente.setSenhaHash("123456");
 
+        when(passwordEncoder.encode("123456")).thenReturn("hashed_123456");
         when(pacienteRepository.save(any(Paciente.class))).thenReturn(paciente);
 
         // When
@@ -98,6 +104,9 @@ class PacienteServiceTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getNome()).isEqualTo("Novo Paciente");
+        assertThat(result.getSenhaHash()).isEqualTo("hashed_123456");
+
+        verify(passwordEncoder).encode("123456");
         verify(pacienteRepository).save(paciente);
     }
 
@@ -123,6 +132,7 @@ class PacienteServiceTest {
         novosDados.setEndereco(novoEndereco);
 
         when(pacienteRepository.findById(id)).thenReturn(Optional.of(pacienteAntigo));
+        when(passwordEncoder.encode("senhaNova")).thenReturn("hashed_senhaNova");
 
         // When
         Paciente result = pacienteService.update(id, novosDados);
@@ -130,10 +140,11 @@ class PacienteServiceTest {
         // Then
         assertThat(result.getNome()).isEqualTo("Nome Novo");
         assertThat(result.getEmail()).isEqualTo("novo@email.com");
-        assertThat(result.getSenhaHash()).isEqualTo("senhaNova");
+        assertThat(result.getSenhaHash()).isEqualTo("hashed_senhaNova");
         assertThat(result.getEndereco().getCidade()).isEqualTo("Nova Cidade");
 
         verify(pacienteRepository).findById(id);
+        verify(passwordEncoder).encode("senhaNova");
     }
 
     @Test
