@@ -37,7 +37,10 @@ public class EnderecoMapper {
         endereco.setBairro(dto.bairro());
         endereco.setCidade(dto.cidade());
         endereco.setEstado(dto.estado());
-        endereco.setPais(dto.pais());
+        
+        if (dto.pais() != null) {
+            endereco.setPais(dto.pais());
+        }
 
         return endereco;
     }
