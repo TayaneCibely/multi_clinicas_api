@@ -32,10 +32,6 @@ public class MedicoController {
 	private final MedicoService medicoService;
     private final MedicoMapper medicoMapper;
     
-    public MedicoController(MedicoService medicoService, MedicoMapper medicoMapper) {
-        this.medicoService = medicoService;
-        this.medicoMapper = medicoMapper;
-    }
     
     @GetMapping
     public ResponseEntity<List<MedicoDTO>> findAll() {
