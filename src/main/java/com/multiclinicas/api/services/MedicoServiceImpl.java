@@ -4,15 +4,17 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.stream.Collectors;
 
 import com.multiclinicas.api.exceptions.ResourceNotFoundException;
 import com.multiclinicas.api.models.Medico;
 import com.multiclinicas.api.models.Clinica;
 import com.multiclinicas.api.models.Especialidade;
 import com.multiclinicas.api.repositories.ClinicaRepository;
+import com.multiclinicas.api.repositories.EspecialidadeRepository;
 import com.multiclinicas.api.repositories.MedicoRepository;
 
-import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -45,12 +47,12 @@ public class MedicoServiceImpl implements MedicoService {
 	
 	@Override
 	@Transactional
-	public Medico create(Long clinicId, Medico medico, Set<Long> especialidadeId) {
+	public Medico create(Long clinicId, Medico medico, Set<Long> especialidadesIds) {
 		Clinica clinica = clinicaRepository.findById(clinicId)
 				.orElseThrow(() -> new ResourceNotFoundException("Não foi possível encontrar a clínica."));
 		medico.setClinica(clinica);
 		
-		Set<Especialidade> especialidades = getEspecialidadeByIds(especialidadeIds, clinicId);
+		Set<Especialidade> especialidades = getEspecialidadesByIds(especialidadesIds, clinicId);
 		medico.setEspecialidades(especialidades);
 		
 		return medicoRepository.save(medico);
@@ -59,7 +61,7 @@ public class MedicoServiceImpl implements MedicoService {
 	
 	@Override
 	@Transactional
-	public Medico update(Long id, Long clinicId, Medico medicoAtualizado, Set<Long> especialidadeId) {
+	public Medico update(Long id, Long clinicId, Medico medicoAtualizado, Set<Long> especialidadeIds) {
 		Medico medicoExistente = findByIdAndClinicId(id, clinicId);
 		
 		medicoExistente.setNome(medicoAtualizado.getNome());
@@ -81,5 +83,14 @@ public class MedicoServiceImpl implements MedicoService {
 		Medico medicoExistente = findByIdAndClinicId(id, clinicId);
 		medicoRepository.delete(medicoExistente);
 	}
+
+	private Set<Especialidade> getEspecialidadesByIds(Set<Long> ids, Long clinicId) {
+    if (ids == null || ids.isEmpty()) {
+        return Set.of();
+    }
+    return especialidadeRepository.findAllById(ids).stream()
+        .filter(e -> e.getClinica().getId().equals(clinicId))
+        .collect(Collectors.toSet());
+}
 
 }
