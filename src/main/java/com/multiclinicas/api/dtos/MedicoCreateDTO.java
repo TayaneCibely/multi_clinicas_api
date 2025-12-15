@@ -14,7 +14,7 @@ public record MedicoCreateDTO (
 		@NotBlank(message = "O CRM é obrigatório") String crm,
 		@NotBlank(message = "É necessário adicionar pelo menos um número de telefone") String telefone,
 		@NotNull(message = "A duração da consulta é obrigatória") Integer duracaoConsulta,
-		@NotNull(message = "É necessário adicionar pelo menos uma especialidade") Set<Long> especialidadeId,
+		@NotNull(message = "É necessário adicionar pelo menos uma especialidade") Set<Long> especialidadeIds,
 		//@NotNull(message = "O endereço é obrigatório") EnderecoCreateDTO endereco,
 		String telefoneSecundario,
 		Boolean ativo) {

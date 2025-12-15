@@ -109,7 +109,7 @@ class MedicoControllerTest {
 	}
 	
 	@Test
-    @DisplayName("Deve atualizar um usuário admin com sucesso")
+    @DisplayName("Deve atualizar um médico com sucesso")
     void shouldUpdateMedicoSuccessfully() throws Exception {
         Long medicoId = 1L;
         Medico medicoAtualizado = new Medico();

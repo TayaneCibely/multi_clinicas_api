@@ -28,83 +28,82 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/medicos")
 @RequiredArgsConstructor
 public class MedicoController {
-	
-	private final MedicoService medicoService;
+
+    private final MedicoService medicoService;
     private final MedicoMapper medicoMapper;
-    
-    
+
     @GetMapping
     public ResponseEntity<List<MedicoDTO>> findAll() {
 
         Long clinicId = TenantContext.getClinicId();
-        
+
         List<Medico> medicos = medicoService.findAllByClinicId(clinicId);
-        
+
         List<MedicoDTO> dtos = medicos.stream()
                 .map(medicoMapper::toDTO)
                 .toList();
-        
+
         return ResponseEntity.ok(dtos);
     }
-    
+
     @GetMapping("/ativos")
     public ResponseEntity<List<MedicoDTO>> findAllActive() {
-    	
+
         Long clinicId = TenantContext.getClinicId();
 
         List<Medico> medicos = medicoService.findAllActiveByClinicId(clinicId);
-        
+
         List<MedicoDTO> dtos = medicos.stream()
                 .map(medicoMapper::toDTO)
                 .toList();
-        
+
         return ResponseEntity.ok(dtos);
     }
-    
+
     @GetMapping("/{id}")
     public ResponseEntity<MedicoDTO> findById(@PathVariable Long id) {
-    	
+
         Long clinicId = TenantContext.getClinicId();
 
         Medico medico = medicoService.findByIdAndClinicId(id, clinicId);
-        
+
         return ResponseEntity.ok(medicoMapper.toDTO(medico));
     }
-    
+
     @PostMapping
     public ResponseEntity<MedicoDTO> create(@RequestBody @Valid MedicoCreateDTO dto) {
-    	
+
         Long clinicId = TenantContext.getClinicId();
-        
+
         Medico medico = medicoMapper.toEntity(dto);
-        
-        Set<Long> especialidadeIds = dto.especialidadeId();
-        
+
+        Set<Long> especialidadeIds = dto.especialidadeIds();
+
         Medico createdMedico = medicoService.create(clinicId, medico, especialidadeIds);
-        
+
         return ResponseEntity.status(HttpStatus.CREATED).body(medicoMapper.toDTO(createdMedico));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<MedicoDTO> update(@PathVariable Long id,
-                                           @RequestBody @Valid MedicoCreateDTO dto) {
+            @RequestBody @Valid MedicoCreateDTO dto) {
         Long clinicId = TenantContext.getClinicId();
 
         Medico medicoAtualizado = medicoMapper.toEntity(dto);
 
-        Set<Long> especialidadeIds = dto.especialidadeId();
-        
+        Set<Long> especialidadeIds = dto.especialidadeIds();
+
         Medico updatedMedico = medicoService.update(id, clinicId, medicoAtualizado, especialidadeIds);
-        
+
         return ResponseEntity.ok(medicoMapper.toDTO(updatedMedico));
     }
-    
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         Long clinicId = TenantContext.getClinicId();
 
         medicoService.delete(id, clinicId);
-        
+
         return ResponseEntity.noContent().build();
     }
 }
