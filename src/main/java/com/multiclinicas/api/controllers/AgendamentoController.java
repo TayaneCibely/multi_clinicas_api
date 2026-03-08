@@ -15,10 +15,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.multiclinicas.api.config.tenant.TenantContext;
+import java.time.LocalDate;
 import com.multiclinicas.api.dtos.AgendamentoCreateDTO;
 import com.multiclinicas.api.dtos.AgendamentoDTO;
 import com.multiclinicas.api.dtos.AgendamentoRemarcarDTO;
 import com.multiclinicas.api.dtos.AgendamentoStatusDTO;
+import com.multiclinicas.api.dtos.DisponibilidadeDTO;
 import com.multiclinicas.api.mappers.AgendamentoMapper;
 import com.multiclinicas.api.models.Agendamento;
 import com.multiclinicas.api.services.AgendamentoService;
@@ -97,4 +99,5 @@ public class AgendamentoController {
         Agendamento agendamento = agendamentoService.atualizarStatus(id, clinicId, dto);
         return ResponseEntity.ok(agendamentoMapper.toDTO(agendamento));
     }
+
 }

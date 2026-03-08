@@ -12,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.multiclinicas.api.dtos.AgendamentoCreateDTO;
 import com.multiclinicas.api.dtos.AgendamentoRemarcarDTO;
 import com.multiclinicas.api.dtos.AgendamentoStatusDTO;
+import com.multiclinicas.api.dtos.DisponibilidadeDTO;
+import java.util.ArrayList;
 import com.multiclinicas.api.exceptions.BusinessException;
 import com.multiclinicas.api.exceptions.ResourceConflictException;
 import com.multiclinicas.api.exceptions.ResourceNotFoundException;
@@ -178,6 +180,63 @@ public class AgendamentoServiceImpl implements AgendamentoService {
 
         agendamento.setStatus(novoStatus);
         return agendamentoRepository.save(agendamento);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public DisponibilidadeDTO buscarDisponibilidade(Long medicoId, LocalDate data, Long clinicId) {
+        Medico medico = medicoRepository.findByIdAndClinicaId(medicoId, clinicId);
+        if (medico == null) {
+            throw new ResourceNotFoundException("Médico não encontrado");
+        }
+
+        if (!medico.getAtivo()) {
+            return new DisponibilidadeDTO(medicoId, data, List.of());
+        }
+
+        int diaSemana = data.getDayOfWeek().getValue();
+        List<GradeHorario> grades = gradeHorarioRepository.findAllByMedicoIdAndDiaSemana(medico.getId(), diaSemana);
+
+        if (grades.isEmpty()) {
+            return new DisponibilidadeDTO(medicoId, data, List.of());
+        }
+
+        List<Agendamento> agendamentos = agendamentoRepository.findByMedicoIdAndDataConsultaAndClinicaId(medicoId, data, clinicId)
+                .stream()
+                .filter(a -> a.getStatus() != StatusAgendamento.CANCELADO_CLINICA &&
+                        a.getStatus() != StatusAgendamento.CANCELADO_PACIENTE)
+                .toList();
+
+        int duracao = medico.getDuracaoConsulta();
+        List<LocalTime> horariosDisponiveis = new ArrayList<>();
+
+        for (GradeHorario grade : grades) {
+            LocalTime slotInicio = grade.getHoraInicio();
+            LocalTime slotFim = slotInicio.plusMinutes(duracao);
+
+            while (!slotFim.isAfter(grade.getHoraFim())) {
+                boolean conflito = isSlotOcupado(slotInicio, slotFim, agendamentos);
+
+                LocalDate hoje = LocalDate.now();
+                boolean noPassado = data.isBefore(hoje) || (data.isEqual(hoje) && slotInicio.isBefore(LocalTime.now()));
+
+                if (!conflito && !noPassado) {
+                    horariosDisponiveis.add(slotInicio);
+                }
+
+                slotInicio = slotInicio.plusMinutes(duracao);
+                slotFim = slotInicio.plusMinutes(duracao);
+            }
+        }
+
+        horariosDisponiveis.sort(LocalTime::compareTo);
+        return new DisponibilidadeDTO(medicoId, data, horariosDisponiveis);
+    }
+
+    private boolean isSlotOcupado(LocalTime inicio, LocalTime fim, List<Agendamento> agendamentos) {
+        return agendamentos.stream().anyMatch(a ->
+            (inicio.isBefore(a.getHoraFim()) && fim.isAfter(a.getHoraInicio()))
+        );
     }
 
     private void validarHorarioFuturo(LocalDate data, LocalTime hora) {

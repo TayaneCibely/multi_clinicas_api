@@ -5,7 +5,9 @@ import java.util.List;
 import com.multiclinicas.api.dtos.AgendamentoCreateDTO;
 import com.multiclinicas.api.dtos.AgendamentoRemarcarDTO;
 import com.multiclinicas.api.dtos.AgendamentoStatusDTO;
+import com.multiclinicas.api.dtos.DisponibilidadeDTO;
 import com.multiclinicas.api.models.Agendamento;
+import java.time.LocalDate;
 
 public interface AgendamentoService {
     List<Agendamento> findAllByClinicId(Long clinicId);
@@ -19,4 +21,6 @@ public interface AgendamentoService {
     Agendamento cancelar(Long id, Long clinicId, boolean canceladoPeloClinica);
 
     Agendamento atualizarStatus(Long id, Long clinicId, AgendamentoStatusDTO dto);
+
+    DisponibilidadeDTO buscarDisponibilidade(Long medicoId, LocalDate data, Long clinicId);
 }
